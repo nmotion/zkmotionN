@@ -1,0 +1,1 @@
+开mach3后通过view－>load screen 即可 (查看->加载新界面）,装载.set的文件

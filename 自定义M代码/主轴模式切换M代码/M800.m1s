@@ -1,0 +1,4 @@
+'CS as C axis step out
+DoSpinStop()
+sleep(1000)
+SetVar(1030,0)

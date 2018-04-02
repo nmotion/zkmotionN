@@ -1,0 +1,5 @@
+'CS as spindle 
+'CS ÎªÖ÷ÖáÂö³å
+DoSpinStop()
+sleep(1000)
+SetVar(1030,174)
