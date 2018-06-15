@@ -1,0 +1,103 @@
+
+Rem	VBScript To center mill On quick relase handle In preparation For slot cutting
+
+Dist = 10.0 '最大探测距离,应该比柱体半径大一些，比如柱体半径为8，则最大探测距离大概可以设置为10
+ZDist = 2.0 'z轴深入距离
+Sat = 1.0  '对刀器碰到后回退距离
+
+
+If GetOemLed (825) <> 0 Then 'Check to see if the probe is already grounded or faulty
+Code "(Probe plate is grounded, check connection and try again)"
+Else
+DoSpinStop()
+FeedCurrent = GetOemDRO(818) 'Get the current settings
+XCurrent = GetDro(0)
+YCurrent = GetDro(1)
+ZCurrent = GetDro(2)
+
+Code "G4 P1"	 '暂停1s
+Code "F25"	 '速度变慢为25
+
+Rem	Probe Down
+
+ZNew = ZCurrent - ZDist	 '往下探测工件上表面
+Code "G31 Z" &ZNew   '开始探测
+While IsMoving()	 
+Sleep(200)
+Wend
+ZTop = GetDro(2)	 '取得工件上表面z坐标
+
+Code "G0 Z" &ZTop + Sat	 '探测到上表面，离开
+Code "G0 Y" &YCurrent + Dist	'
+Code "G0 Z" &ZTop - ZDist	 '
+
+Rem	Probe foward
+
+Code "G31 Y" &YCurrent	 'Scan back edge
+While IsMoving()
+Sleep(200)
+Wend
+YPos1 = GetDro(1)	 'Record back edge position
+
+Code "G0 Y" &YPos1 + Sat	'Move away from last scanned edge
+Code "G0 Z" &ZTop +Sat	 'Move up above part surface
+Code "G0 Y" &YCurrent - Dist	'Move   to front edge of part
+Code "G0 Z" &ZTop - ZDist	 'Move down to  below part top edge
+
+Rem	Probe backward
+
+Code "G31 Y" &YCurrent	 
+While IsMoving()
+Sleep(200)
+Wend
+YPos2 = GetDro(1)	 
+
+YCenter = (YPos1 + YPos2) / 2	 
+Code "G0 Y" &YPos2 - Sat	 
+Code "G0 Z" &ZTop + Sat	 
+
+Rem	move To the center
+
+Code "G0 Y" &YCenter	  
+Code "G0 X" &XCurrent + Dist	 
+Code "G0 Z" &ZTop - ZDist	  
+Rem	Probe Left
+
+Code "G31 X" &XCurrent	 
+While IsMoving()	 'wait for the move to finish
+Sleep(200)
+Wend
+XPos1 = GetDro(0)	  
+Code "G0 X" &XPos1 + Sat	 
+Code "G0 Z" &ZTop + Sat	  
+Code "G0 X" &XCurrent-Dist	 
+Code "G0 Z" &ZTop - ZDist	 
+
+Rem	Probe Right
+
+Code "G31 X" &XCurrent
+While IsMoving()
+Sleep(200)
+Wend
+XPos2 = GetDro(0)
+
+XCenter = (XPos1 + XPos2) / 2	'center is midway between XPos1 and XPos2
+Code "G0 X" &XPos2 - Sat	 
+Code "G0 Z" &ZTop + Sat	 
+Code "G0 X" &XCenter	  
+
+While IsMoving()
+Sleep(200)
+Wend
+
+
+Code "F" &FeedCurrent  'restore starting feed rate
+
+Rem	Reset DROs
+
+Call SetDro (0,0.00)	 'reset X axis DRO
+Call SetDro (1,0.00)	 'reset Y axis DRO
+Call SetDro (2,Sat)	 'reset Z axis DRO
+
+End If   
+

@@ -1,0 +1,21 @@
+'Rem	Probe Down by PEU (Based on Erniebro Work)
+FeedCurrent = GetOemDRO(818) 	'Get the current settings
+ZCurrent = GetDro(2)
+Code "G4 P1"			'Pause 1 second to give time to position probe plate
+Code "F300"			'slow feed rate to 10 MM/MIN
+GageH = GetOEMDRO (1002)
+Rem	Probe Down by PEU (Based On Erniebro Work)
+FeedCurrent = GetOemDRO(818) 	'Get the current settings
+ZCurrent = GetOemDro(802)
+Code "G4 P1"			'Pause 1 second to give time to position probe plate
+Code "F300"			'slow feed rate to 10 MM/MIN
+ZNew = ZCurrent - 30		'probe down 30mm 
+Code "G31 Z" &ZNew
+While IsMoving()
+Wend
+Call SetDro (2,GageH)
+FinalMove = GageH * 1+10
+Code  "G1 Z" &FinalMove
+'Code  "G1 Z" &10  'Ì§µ¶¸ß¶È
+Code "F" &FeedCurrent  		'restore starting 
+

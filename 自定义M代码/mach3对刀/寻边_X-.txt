@@ -1,0 +1,26 @@
+CurrentFeed = GetOemDRO(818)	'保存当前进给设置
+DoSpinStop()	'主轴停转
+
+Cur = GetDro(0) '读x坐标
+Move = Cur-20.0 '探测深度最大20.0
+Offset = Abs(GetOEMDRO(1000))/(2) '寻边器半径,要补偿掉的
+Sal = Offset + 2.0 '对刀完成后，离开工件2.0
+
+If GetOemLed (825)=0 Then	'判断寻边器是否跟工件有接触?只有开始时无接触才能运行寻边
+Code "G4 P2.5"	'暂停2.5秒
+Code "G31 X"& Move & "F25"	'x轴以进给25的速度寻边
+While IsMoving()		'等待寻边探测停止
+Sleep(200)
+Wend
+Probepos = GetDro(0)		'
+Call SetDro(0, Offset)		'设置新的x原点
+Code "G4 P1"			'暂停
+Code "G0 X" & Sal		'回退
+Code "(X zeroed)"		'提示信息
+Code "F" &CurrentFeed 		'恢复原有进给设置
+
+Else
+Code "(Check Ground Probe)"	'寻边器(probe)对地短路了(跟工件有接触),放弃操作
+End If
+
+Exit Sub   

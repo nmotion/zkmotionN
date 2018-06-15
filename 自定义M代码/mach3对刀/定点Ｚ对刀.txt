@@ -1,0 +1,58 @@
+
+Sub Main()
+x = GetToolChangeStart( 0 )
+y = GetToolChangeStart( 1 )
+z = GetToolChangeStart( 2 )
+a = GetToolChangeStart( 3 )
+b = GetToolChangeStart( 4 )
+c = GetToolChangeStart( 5 )
+XPROB=45   'prob for X ABS position　对刀块在的Ｘ轴机械坐标
+YPROB=125  'Prob for Y ABS position　对刀块在的Ｙ轴机械坐标
+ToolUp =-10 'Z Height to prepare for probing  对刀前Z轴机械坐标
+ 
+Code"G00 G53 Z" & ToolUp
+
+While IsMoving()
+Sleep(100)
+Wend
+
+Code "F600"
+Code"G53 X"& XPROB & "Y" &YPROB  'goto static position to prob Z
+While IsMoving()
+Sleep(100)
+Wend
+Call ProbZ(40,30)　　' 对刀子程序，40 下探深度，30探测速度
+
+Code"G00 X"& x & "Y" & y 'Move back to where begin for prob
+While IsMoving()
+Sleep(100)
+Wend
+End Sub
+'main end
+
+Sub ProbZ(ByVal ProbDown As Double ,ByVal SpeedT As Integer)
+'SpeedT prob down speed
+'Rem	Probe Down by PEU (Based on Erniebro Work)
+FeedCurrent = GetOemDRO(818) 	'Get the current settings
+ZCurrent = GetDro(2)
+Code "G4 P1"			'Pause 1 second to give time to position probe plate
+Code "F"&SpeedT 			'slow feed rate to 10 MM/MIN
+GageH = GetOEMDRO (1002)
+Rem	Probe Down by PEU (Based On Erniebro Work)
+FeedCurrent = GetOemDRO(818) 	'Get the current settings
+ZCurrent = GetOemDro(802)
+Code "G4 P1"			'Pause 1 second to give time to position probe plate
+Code "F"&SpeedT 			'slow feed rate to 10 MM/MIN
+ZNew = ZCurrent - ProbDown 		'probe down 40mm 
+Code "G31 Z" &ZNew
+While IsMoving()
+Wend
+Call SetDro (2,GageH)
+FinalMove = GageH * 1+10
+Code  "G0 Z" &FinalMove
+'Code  "G0 Z" &FinalMove  '抬刀高度
+Code "F" &FeedCurrent  		'restore starting 
+End Sub
+
+Main 
+

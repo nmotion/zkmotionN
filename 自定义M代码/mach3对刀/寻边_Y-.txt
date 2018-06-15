@@ -1,0 +1,27 @@
+
+CurrentFeed = GetOemDRO(818)
+DoSpinStop()
+
+Cur = GetDro(1)
+Move = Cur-20.0 '探测深度最大20.0
+Offset = Abs(GetOEMDRO(1000))/(2) '寻边器半径
+Sal = Offset + 2.0 '对刀完成后，离开2.0
+
+If GetOemLed (825)=0 Then
+Code "G4 P2.5"
+Code "G31 Y"& Move & "F25"
+While IsMoving()
+Sleep(200)
+Wend
+Probepos = GetDro(1)
+Call SetDro(1, Offset)
+Code "G4 P1"
+Code "G0 Y" & Sal
+Code "(Y zeroed)"
+Code "F" &CurrentFeed
+
+Else
+Code "(Check Ground Probe)"
+End If
+
+Exit Sub   

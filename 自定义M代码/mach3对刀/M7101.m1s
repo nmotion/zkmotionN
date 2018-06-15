@@ -1,0 +1,18 @@
+Rem	Probe Down by Ecut 2013-12-20
+
+FeedCurrent = GetOemDRO(818) 	'Get the current settings, OEM DROs (818)=Feedrate DRO
+ZCurrent = GetOemDro(802)	'OEM DROs (802)=Z DRO
+GageH = GetOEMDRO(1002)	'OEMDRO(1001)=Gage Block Height
+ZNew = ZCurrent - 20		'probe down 20 mm
+
+Code "G90F100"			'slow feed rate to 100 MM/MIN
+Rem Code "G4 P1"			'Pause 1 second to give time to position probe plate
+Code "G31 Z" &ZNew
+While IsMoving()
+Sleep(10)
+Wend
+Call SetDro (2,GageH)		'DRO(2)=Z DRO
+
+FinalMove = GageH + 10
+Code  "G0 Z" &FinalMove
+Code "F" &FeedCurrent  		'restore starting feed rate   dr.lin 2009.10.16 
